@@ -51,13 +51,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const response = await fetch(url, {
         method: "GET",
+        mode: "cors",
+        referrerPolicy: "no-referrer",
         headers: {
           accept: "application/json, text/plain, */*",
-          "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
-          origin: "https://www.dice.com",
-          referer: "https://www.dice.com/",
-          "user-agent":
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
           "x-api-key": "1YAt0R9wBg4WfsF9VB2778F5CHLAPMVW3WAZcKd8",
         },
       });
