@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const jobInput = document.getElementById("jobInput");
+  const dateFilter = document.getElementById("dateFilter");
+  const workSetting = document.getElementById("workSetting");
   const searchButton = document.getElementById("searchButton");
   const downloadButton = document.getElementById("downloadButton");
   const statusDiv = document.getElementById("status");
@@ -47,12 +49,16 @@ document.addEventListener("DOMContentLoaded", () => {
       statusDiv.textContent = `Fetching page ${page}...`;
       const url = `https://job-search-api.svc.dhigroupinc.com/v1/dice/jobs/search?q=${encodeURIComponent(
         jobTitle
-      )}&countryCode2=US&radius=30&radiusUnit=mi&page=${page}&pageSize=100&facets=employmentType%7CpostedDate%7CworkFromHomeAvailability%7CworkplaceTypes%7CemployerType%7CeasyApply%7CisRemote%7CwillingToSponsor&filters.workplaceTypes=On-Site%7CHybrid%7CRemote&filters.employmentType=THIRD_PARTY&filters.postedDate=SEVEN&fields=id%7CjobId%7Cguid%7Csummary%7Ctitle%7CpostedDate%7CmodifiedDate%7CjobLocation.displayName%7CdetailsPageUrl%7Csalary%7CclientBrandId%7CcompanyPageUrl%7CcompanyLogoUrl%7CcompanyLogoUrlOptimized%7CpositionId%7CcompanyName%7CemploymentType%7CisHighlighted%7Cscore%7CeasyApply%7CemployerType%7CworkFromHomeAvailability%7CworkplaceTypes%7CisRemote%7Cdebug%7CjobMetadata%7CwillingToSponsor&culture=en&recommendations=true&interactionId=0&fj=true&includeRemote=true`;
+      )}&countryCode2=US&radius=30&radiusUnit=mi&page=${page}&pageSize=100&facets=employmentType%7CpostedDate%7CworkFromHomeAvailability%7CworkplaceTypes%7CemployerType%7CeasyApply%7CisRemote%7CwillingToSponsor&filters.postedDate=${encodeURIComponent(
+        dateFilter.value
+      )}&filters.workplaceTypes=${encodeURIComponent(
+        workSetting.value
+      )}&filters.employmentType=THIRD_PARTY&fields=id%7CjobId%7Cguid%7Csummary%7Ctitle%7CpostedDate%7CmodifiedDate%7CjobLocation.displayName%7CdetailsPageUrl%7Csalary%7CclientBrandId%7CcompanyPageUrl%7CcompanyLogoUrl%7CcompanyLogoUrlOptimized%7CpositionId%7CcompanyName%7CemploymentType%7CisHighlighted%7Cscore%7CeasyApply%7CemployerType%7CworkFromHomeAvailability%7CworkplaceTypes%7CisRemote%7Cdebug%7CjobMetadata%7CwillingToSponsor&culture=en&recommendations=true&interactionId=0&fj=true&includeRemote=true`;
 
       const response = await fetch(url, {
         method: "GET",
         mode: "cors",
-        referrerPolicy: "no-referrer",
+        referrerPolicy: "no-referrer", // Prevent sending the referrer
         headers: {
           accept: "application/json, text/plain, */*",
           "x-api-key": "1YAt0R9wBg4WfsF9VB2778F5CHLAPMVW3WAZcKd8",
@@ -73,8 +79,24 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // const dateFilterValue = dateFilter.value.trim();
+    // const workSettingValue = workSetting.value.trim();
+    // return filterJobs(allJobs, dateFilterValue, workSettingValue);
     return allJobs;
   }
+
+  // function filterJobs(jobs, dateFilterValue, workSettingValue) {
+  //   const now = new Date();
+
+  //   return jobs.filter((job) => {
+  //     const postedDate = new Date(job.postedDate);
+  //     const dateThreshold = new Date();
+  //     dateThreshold.setDate(now.getDate() - dateFilterValue);
+  //     const isWithinDateRange = postedDate >= dateThreshold;
+  //     const matchesWorkSetting = job.workplaceTypes.includes(workSettingValue);
+  //     return isWithinDateRange && matchesWorkSetting;
+  //   });
+  // }
 
   function displayJobs(jobs) {
     tableBody.innerHTML = jobs
@@ -130,7 +152,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
-      link.setAttribute("download", `${jobInput.value.trim()}_jobs.csv`);
+      link.setAttribute(
+        "download",
+        `${jobInput.value.trim()}_${dateFilter.value}_${
+          workSetting.value
+        }_jobs.csv`
+      );
       link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
