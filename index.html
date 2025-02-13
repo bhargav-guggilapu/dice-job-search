@@ -15,6 +15,15 @@
       <h1>Dice Job Search Data</h1>
       <div class="search-container">
         <input type="text" id="jobInput" placeholder="Enter job title" />
+        <select id="dateFilter">
+          <option value="THREE">Last 3 Days</option>
+          <option value="SEVEN" selected>Last 7 Days</option>
+        </select>
+        <select id="workSetting">
+          <option value="On-Site">On-Site</option>
+          <option value="Hybrid">Hybrid</option>
+          <option value="Remote">Remote</option>
+        </select>
         <button id="searchButton">Search</button>
       </div>
       <div id="status"></div>
@@ -34,6 +43,6 @@
         </table>
       </div>
     </div>
-    <script src="script.js" crossorigin="anonymous"></script>
+    <script src="script.js"></script>
   </body>
 </html>
