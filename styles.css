@@ -138,3 +138,25 @@ tr:hover {
     width: 100%;
   }
 }
+
+.popular-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.role-button {
+  padding: 0.3rem 1rem;
+  font-size: 0.8rem;
+  border-radius: 20px;
+  background-color: #6b7072;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.role-button:hover {
+  background-color: #2980b9;
+}

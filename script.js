@@ -8,6 +8,43 @@ document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.querySelector("#jobTable tbody");
   const tableHeaders = document.querySelectorAll("#jobTable th");
 
+  const roles = [
+    "Software Engineer",
+    "Data Scientist",
+    "DevOps Engineer",
+    "AWS Cloud Engineer",
+    "Java Developer",
+    "Frontend Developer",
+    "Backend Developer",
+    "Full Stack Developer",
+    "QA Engineer",
+    "Business Analyst",
+    "Scrum Master",
+    "Cybersecurity Analyst",
+  ];
+
+  const popularRolesContainer = document.querySelector(".popular-roles");
+
+  roles.forEach((role) => {
+    const roleButton = document.createElement("span");
+    roleButton.className = "role-button";
+    roleButton.textContent = role;
+
+    roleButton.addEventListener("click", () => {
+      document.querySelector("#jobInput").value = role;
+      searchJobs();
+    });
+
+    popularRolesContainer.appendChild(roleButton);
+  });
+
+  document.querySelectorAll(".role-button").forEach((button) => {
+    button.addEventListener("click", () => {
+      jobInput.value = button.textContent;
+      searchJobs();
+    });
+  });
+
   let allJobs = [];
   let sortColumn = null;
   let sortDirection = "asc";
@@ -58,9 +95,11 @@ document.addEventListener("DOMContentLoaded", () => {
         jobTitle
       )}&countryCode2=US&radius=30&radiusUnit=mi&page=${page}&pageSize=100&facets=employmentType%7CpostedDate%7CworkFromHomeAvailability%7CworkplaceTypes%7CemployerType%7CeasyApply%7CisRemote%7CwillingToSponsor&filters.postedDate=${encodeURIComponent(
         dateFilter.value
-      )}&filters.workplaceTypes=${encodeURIComponent(
-        workSetting.value
-      )}&filters.employmentType=THIRD_PARTY&fields=id%7CjobId%7Cguid%7Csummary%7Ctitle%7CpostedDate%7CmodifiedDate%7CjobLocation.displayName%7CdetailsPageUrl%7Csalary%7CclientBrandId%7CcompanyPageUrl%7CcompanyLogoUrl%7CcompanyLogoUrlOptimized%7CpositionId%7CcompanyName%7CemploymentType%7CisHighlighted%7Cscore%7CeasyApply%7CemployerType%7CworkFromHomeAvailability%7CworkplaceTypes%7CisRemote%7Cdebug%7CjobMetadata%7CwillingToSponsor&culture=en&recommendations=true&interactionId=0&fj=true&includeRemote=true`;
+      )}${
+        workSetting.value == "All"
+          ? ""
+          : `&filters.workplaceTypes=${encodeURIComponent(workSetting.value)}`
+      }&filters.employmentType=THIRD_PARTY&fields=id%7CjobId%7Cguid%7Csummary%7Ctitle%7CpostedDate%7CmodifiedDate%7CjobLocation.displayName%7CdetailsPageUrl%7Csalary%7CclientBrandId%7CcompanyPageUrl%7CcompanyLogoUrl%7CcompanyLogoUrlOptimized%7CpositionId%7CcompanyName%7CemploymentType%7CisHighlighted%7Cscore%7CeasyApply%7CemployerType%7CworkFromHomeAvailability%7CworkplaceTypes%7CisRemote%7Cdebug%7CjobMetadata%7CwillingToSponsor&culture=en&recommendations=true&interactionId=0&fj=true&includeRemote=true`;
 
       const response = await fetch(url, {
         method: "GET",
