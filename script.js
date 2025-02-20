@@ -6,13 +6,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const downloadButton = document.getElementById("downloadButton");
   const statusDiv = document.getElementById("status");
   const tableBody = document.querySelector("#jobTable tbody");
+  const tableHeaders = document.querySelectorAll("#jobTable th");
 
   let allJobs = [];
+  let sortColumn = null;
+  let sortDirection = "asc";
 
   searchButton.addEventListener("click", searchJobs);
   downloadButton.addEventListener("click", () =>
     downloadCSV(convertToCSV(allJobs))
   );
+
+  tableHeaders.forEach((header, index) => {
+    header.addEventListener("click", () => sortTableByColumn(index));
+  });
 
   async function searchJobs() {
     const jobTitle = jobInput.value.trim();
@@ -78,25 +85,8 @@ document.addEventListener("DOMContentLoaded", () => {
         hasMorePages = false;
       }
     }
-
-    // const dateFilterValue = dateFilter.value.trim();
-    // const workSettingValue = workSetting.value.trim();
-    // return filterJobs(allJobs, dateFilterValue, workSettingValue);
     return allJobs;
   }
-
-  // function filterJobs(jobs, dateFilterValue, workSettingValue) {
-  //   const now = new Date();
-
-  //   return jobs.filter((job) => {
-  //     const postedDate = new Date(job.postedDate);
-  //     const dateThreshold = new Date();
-  //     dateThreshold.setDate(now.getDate() - dateFilterValue);
-  //     const isWithinDateRange = postedDate >= dateThreshold;
-  //     const matchesWorkSetting = job.workplaceTypes.includes(workSettingValue);
-  //     return isWithinDateRange && matchesWorkSetting;
-  //   });
-  // }
 
   function displayJobs(jobs) {
     tableBody.innerHTML = jobs
@@ -115,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   <td>${job.salary || "N/A"}</td>
                   <td>${new Date(job.postedDate).toLocaleDateString()}</td>
               </tr>
-          `
+            `
       )
       .join("");
   }
@@ -162,6 +152,44 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+  }
+
+  function sortTableByColumn(columnIndex) {
+    const header = tableHeaders[columnIndex];
+    const isSameColumn = sortColumn === columnIndex;
+    sortDirection = isSameColumn && sortDirection === "asc" ? "desc" : "asc";
+    sortColumn = columnIndex;
+
+    tableHeaders.forEach((th) => th.classList.remove("sort-asc", "sort-desc"));
+    header.classList.add(`sort-${sortDirection}`);
+
+    allJobs.sort((a, b) => {
+      const aValue = getValueForColumn(a, columnIndex);
+      const bValue = getValueForColumn(b, columnIndex);
+
+      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    displayJobs(allJobs);
+  }
+
+  function getValueForColumn(job, columnIndex) {
+    switch (columnIndex) {
+      case 0:
+        return job.title.toLowerCase();
+      case 1:
+        return job.companyName.toLowerCase();
+      case 2:
+        return job.jobLocation ? job.jobLocation.displayName.toLowerCase() : "";
+      case 3:
+        return job.salary || "";
+      case 4:
+        return new Date(job.postedDate).toLocaleDateString();
+      default:
+        return "";
     }
   }
 });
