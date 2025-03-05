@@ -8,6 +8,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.querySelector("#jobTable tbody");
   const tableHeaders = document.querySelectorAll("#jobTable th");
 
+  // List of companies to search for
+  const companies = [
+    "Deemsys Inc",
+    "Cogent IBS, Inc",
+    "Photon",
+    "R4 IT Solutions Inc",
+    "Valueprosite",
+    "Unica Group, Inc",
+    "Vrddhi Solutions LLC",
+  ];
+
   const roles = [
     "Software Engineer",
     "Data Scientist",
@@ -58,6 +69,15 @@ document.addEventListener("DOMContentLoaded", () => {
     header.addEventListener("click", () => sortTableByColumn(index));
   });
 
+  jobInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      searchJobs();
+    }
+  });
+
+  searchJobsByCompanies();
+
   async function searchJobs() {
     const jobTitle = jobInput.value.trim();
     if (!jobTitle) {
@@ -82,6 +102,89 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       searchButton.disabled = false;
     }
+  }
+
+  async function searchJobsByCompanies() {
+    statusDiv.textContent = "Fetching jobs from companies...";
+    searchButton.disabled = true;
+    tableBody.innerHTML = "";
+    downloadButton.style.display = "none";
+    allJobs = [];
+
+    try {
+      let allJobs = [];
+
+      for (const company of companies) {
+        const jobs = await fetchJobsByCompany(company);
+        allJobs = allJobs.concat(jobs);
+      }
+
+      displayJobs(allJobs);
+      statusDiv.textContent = `Found ${allJobs.length} jobs from ${companies.length} companies.`;
+      downloadButton.style.display = allJobs.length > 0 ? "block" : "none";
+    } catch (error) {
+      console.error("Error:", error);
+      statusDiv.textContent =
+        "An error occurred while fetching jobs. Please try again.";
+    } finally {
+      searchButton.disabled = false;
+    }
+  }
+
+  async function fetchJobsByCompany(companyName) {
+    let allJobs = [];
+    let page = 1;
+    let hasMorePages = true;
+
+    while (hasMorePages) {
+      statusDiv.textContent = `Fetching ${companyName} jobs (page ${page})...`;
+
+      const url = `https://job-search-api.svc.dhigroupinc.com/v1/dice/jobs/search?q=${encodeURIComponent(
+        companyName
+      )}&countryCode2=US&radius=30&radiusUnit=mi&page=${page}&pageSize=100&facets=employmentType%7CpostedDate%7CworkFromHomeAvailability%7CworkplaceTypes%7CemployerType%7CeasyApply%7CisRemote%7CwillingToSponsor&filters.postedDate=${encodeURIComponent(
+        dateFilter.value
+      )}${
+        workSetting.value == "All"
+          ? ""
+          : `&filters.workplaceTypes=${encodeURIComponent(workSetting.value)}`
+      }&filters.employmentType=THIRD_PARTY&fields=id%7CjobId%7Cguid%7Csummary%7Ctitle%7CpostedDate%7CmodifiedDate%7CjobLocation.displayName%7CdetailsPageUrl%7Csalary%7CclientBrandId%7CcompanyPageUrl%7CcompanyLogoUrl%7CcompanyLogoUrlOptimized%7CpositionId%7CcompanyName%7CemploymentType%7CisHighlighted%7Cscore%7CeasyApply%7CemployerType%7CworkFromHomeAvailability%7CworkplaceTypes%7CisRemote%7Cdebug%7CjobMetadata%7CwillingToSponsor&culture=en&recommendations=true&interactionId=0&fj=true&includeRemote=true`;
+
+      try {
+        const response = await fetch(url, {
+          method: "GET",
+          mode: "cors",
+          referrerPolicy: "no-referrer",
+          headers: {
+            accept: "application/json, text/plain, */*",
+            "x-api-key": "1YAt0R9wBg4WfsF9VB2778F5CHLAPMVW3WAZcKd8",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Network response was not ok for ${companyName}`);
+        }
+
+        const data = await response.json();
+
+        // Filter jobs to only include those from the exact company we're looking for
+        const companyJobs = data.data.filter((job) =>
+          job.companyName.toLowerCase().includes(companyName.toLowerCase())
+        );
+
+        allJobs = allJobs.concat(companyJobs);
+
+        if (data.meta && data.meta.pageCount > page) {
+          page++;
+        } else {
+          hasMorePages = false;
+        }
+      } catch (error) {
+        console.error(`Error fetching jobs for ${companyName}:`, error);
+        hasMorePages = false;
+      }
+    }
+
+    return allJobs;
   }
 
   async function fetchAllJobs(jobTitle) {
@@ -183,9 +286,9 @@ document.addEventListener("DOMContentLoaded", () => {
       link.setAttribute("href", url);
       link.setAttribute(
         "download",
-        `${jobInput.value.trim()}_${dateFilter.value}_${
-          workSetting.value
-        }_jobs.csv`
+        `${jobInput.value != "" ? jobInput.value.trim() : "companies"}_${
+          dateFilter.value
+        }_${workSetting.value}_jobs.csv`
       );
       link.style.visibility = "hidden";
       document.body.appendChild(link);
